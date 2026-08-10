@@ -1,0 +1,3 @@
+"Thomas" = "player"
+SHOW "player"
+SHOW 10 * 5
