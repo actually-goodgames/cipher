@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Programming Language v1.0</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #00ff66;
+            font-family: monospace;
+            padding: 20px;
+        }
+        #terminal {
+            background-color: #000;
+            border: 1px solid #00ff66;
+            padding: 15px;
+            height: 400px;
+            overflow-y: auto;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            white-space: pre-wrap;
+        }
+        .input-line {
+            display: flex;
+            align-items: center;
+        }
+        input {
+            background: transparent;
+            border: none;
+            color: #00ff66;
+            font-family: monospace;
+            font-size: 16px;
+            outline: none;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>WELCOME TO YOUR PROGRAMMING LANGUAGE v1.0</h2>
+    <p>Type <code>/help</code> to get started.</p>
+    
+    <div id="terminal">==================================================
+     WELCOME TO YOUR PROGRAMMING LANGUAGE v1.0    
+==================================================
+Type /help to get the help menu.
+Type /exit to quit.
+--------------------------------------------------
+
+</div>
+
+    <div class="input-line">
+        <span>Your Language &gt;&nbsp;</span>
+        <input type="text" id="userInput" autofocus autocomplete="off">
+    </div>
+
+    <script>
+        const terminal = document.getElementById("terminal");
+        const userInput = document.getElementById("userInput");
+        
+        let variables = {};
+
+        userInput.addEventListener("keydown", function(event) {
+            if (event.key === "Enter") {
+                let line = userInput.value.trim();
+                terminal.innerHTML += "Your Language > " + line + "\n";
+                
+                let output = processCommand(line);
+                if (output) {
+                    terminal.innerHTML += output + "\n";
+                }
+                
+                terminal.scrollTop = terminal.scrollHeight;
+                userInput.value = "";
+            }
+        });
+
+        function processCommand(line) {
+            let cmd = line.toLowerCase();
+            
+            if (cmd === "/help") {
+                return "Commands:\n  /help - Shows help\n  /vars - Shows variables\n  say <text> - Prints text\n  <var> = <value> - Assigns variable\n  show <text> - Prints value";
+            } else if (cmd === "/vars") {
+                let res = ">> Stored Variables:\n";
+                if (Object.keys(variables).length === 0) return res + "   (None)";
+                for (let [k, v] of Object.entries(variables)) {
+                    res += `   ${k} = ${v}\n`;
+                }
+                return res.trim();
+            } else if (cmd.startsWith("say ")) {
+                return ">> " + line.substring(4).trim();
+            } else if (cmd.startsWith("show ")) {
+                let content = line.substring(5).trim();
+                if (variables.hasOwnProperty(content)) {
+                    return ">> Output: " + variables[content];
+                }
+                try {
+                    let mathRes = eval(content);
+                    if (!isNaN(mathRes)) return ">> Output: " + mathRes;
+                } catch(e) {}
+                return ">> Output: " + content;
+            } else if (line.includes("=")) {
+                let parts = line.split("=");
+                let varName = parts[0].trim();
+                let valRaw = parts[1].trim();
+                variables[varName] = valRaw;
+                return `>> Assigned ${varName} = ${valRaw}`;
+            }
+            return `>> Error: Unknown command '${line}'. Type /help for options.`;
+        }
+    </script>
+</body>
+</html>
