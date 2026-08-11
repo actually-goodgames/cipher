@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cypher AI Game Engine</title>
+    <title>Cypher Game Engine</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         body {
@@ -77,8 +77,8 @@
     </div>
 
     <div id="terminal">==================================================
-Welcome to Cypher AI Engine!
-Type commands or just talk to it in English.
+Welcome to Cypher Game Engine!
+Type commands or talk in plain English.
 ==================================================
 Type /help to get the help menu.
 Type /exit to quit.
@@ -160,10 +160,10 @@ Type /exit to quit.
 
         const FULL_HELP_TEXT = 
 `==================================================
-       CYPHER SMART AI & HELP GUIDE     
+        CYPHER GAME & HELP GUIDE     
 ==================================================
 
-1. YOU CAN TALK IN ENGLISH!
+1. NATURAL LANGUAGE PHRASING:
    - "Make a red cube" -> Spawns a red 3D cube
    - "Turn it blue" -> Changes 3D shape color
    - "Switch to 2D grid" -> Opens 2D game map
@@ -183,18 +183,18 @@ Type /exit to quit.
         function processCommand(line) {
             let cmd = line.toLowerCase();
             
-            // --- SMART ENGLISH INTENT PARSING ---
+            // --- NATURAL LANGUAGE PARSING ---
             if (cmd.includes("red")) {
                 material.color.setHex(0xff0000);
-                return ">> [AI Intent] Understood! Changed color to Red.";
+                return ">> Changed color to Red.";
             }
             if (cmd.includes("blue")) {
                 material.color.setHex(0x38bdf8);
-                return ">> [AI Intent] Understood! Changed color to Blue.";
+                return ">> Changed color to Blue.";
             }
             if (cmd.includes("white")) {
                 material.color.setHex(0xffffff);
-                return ">> [AI Intent] Understood! Changed color to White.";
+                return ">> Changed color to White.";
             }
             if (cmd.includes("cube") && (cmd.includes("make") || cmd.includes("spawn") || cmd.includes("show"))) {
                 viewport.style.display = "flex";
@@ -204,7 +204,7 @@ Type /exit to quit.
                 geometry = new THREE.BoxGeometry();
                 currentObject = new THREE.Mesh(geometry, material);
                 scene.add(currentObject);
-                return ">> [AI Intent] Got it! Spawning a 3D cube.";
+                return ">> Spawning a 3D cube.";
             }
             if (cmd.includes("sphere") && (cmd.includes("make") || cmd.includes("spawn") || cmd.includes("show"))) {
                 viewport.style.display = "flex";
@@ -214,14 +214,14 @@ Type /exit to quit.
                 geometry = new THREE.SphereGeometry(0.7, 32, 32);
                 currentObject = new THREE.Mesh(geometry, material);
                 scene.add(currentObject);
-                return ">> [AI Intent] Got it! Spawning a 3D sphere.";
+                return ">> Spawning a 3D sphere.";
             }
             if (cmd.includes("2d") && (cmd.includes("switch") || cmd.includes("mode") || cmd.includes("open"))) {
                 viewport.style.display = "flex";
                 webglEl.style.display = "none";
                 canvas2dEl.style.display = "block";
                 update2DDisplay();
-                return ">> [AI Intent] Switching to 2D view.";
+                return ">> Switching to 2D view.";
             }
 
             // --- STANDARD COMMAND PARSING ---
@@ -234,7 +234,7 @@ Type /exit to quit.
                 viewport.style.display = "none";
                 canvas2dEl.style.display = "none";
                 webglEl.style.display = "none";
-                terminal.innerHTML = "==================================================\nWelcome to Cypher AI Engine!\nType commands or just talk to it in English.\n==================================================\n\n";
+                terminal.innerHTML = "==================================================\nWelcome to Cypher Game Engine!\nType commands or talk in plain English.\n==================================================\n\n";
                 return ">> System reset complete.";
             } else if (cmd === "/exit") {
                 return "Exiting language engine...";
@@ -287,7 +287,7 @@ Type /exit to quit.
                 variables[varName] = valRaw;
                 return `>> [MEMORY] Saved '${valRaw}' to variable '${varName}'`;
             }
-            return `>> [CYPHER AI] I processed your English input: '${line}'`;
+            return `>> [CYPHER] Processed input: '${line}'`;
         }
     </script>
 </body>
