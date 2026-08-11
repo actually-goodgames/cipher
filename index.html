@@ -78,7 +78,7 @@
 
     <div id="terminal">==================================================
 Welcome to Cypher Game Engine!
-Type commands or talk in plain English.
+Type commands, talk in English, or try /question.
 ==================================================
 Type /help to get the help menu.
 Type /exit to quit.
@@ -163,18 +163,22 @@ Type /exit to quit.
         CYPHER GAME & HELP GUIDE     
 ==================================================
 
-1. NATURAL LANGUAGE PHRASING:
+1. Q&A FEATURE:
+   /question [your question] -> Asks Cypher a question
+   (e.g., "/question what is cypher")
+
+2. NATURAL LANGUAGE PHRASING:
    - "Make a red cube" -> Spawns a red 3D cube
    - "Turn it blue" -> Changes 3D shape color
    - "Switch to 2D grid" -> Opens 2D game map
 
-2. 2D & 3D COMMANDS:
+3. 2D & 3D COMMANDS:
    /mode 2d /start2d  -> Open 2D grid mode
    /mode 3d = cube    -> Open 3D cube mode
    /mode 3d = sphere  -> Open 3D sphere mode
    /move up/down      -> Move player in 2D
 
-3. SYSTEM COMMANDS:
+4. SYSTEM COMMANDS:
    /help              -> Shows this help menu
    /reset             -> Clears memory and screens
    /exit              -> Quits interpreter
@@ -183,6 +187,20 @@ Type /exit to quit.
         function processCommand(line) {
             let cmd = line.toLowerCase();
             
+            // --- NEW /QUESTION COMMAND HANDLER ---
+            if (cmd.startsWith("/question ")) {
+                let query = line.substring(10).trim().toLowerCase();
+                if (query.includes("what is cypher")) {
+                    return ">> Cypher Q&A: Cypher is an easy browser-based programming and game engine language.";
+                } else if (query.includes("creator") || query.includes("who made")) {
+                    return ">> Cypher Q&A: Cypher was designed and built by you!";
+                } else if (query.includes("game")) {
+                    return ">> Cypher Q&A: You can build 2D grid games and 3D shape viewports using simple commands.";
+                } else {
+                    return `>> Cypher Q&A: You asked about "${query}". (Try asking about Cypher, games, or the creator!)`;
+                }
+            }
+
             // --- NATURAL LANGUAGE PARSING ---
             if (cmd.includes("red")) {
                 material.color.setHex(0xff0000);
@@ -234,7 +252,7 @@ Type /exit to quit.
                 viewport.style.display = "none";
                 canvas2dEl.style.display = "none";
                 webglEl.style.display = "none";
-                terminal.innerHTML = "==================================================\nWelcome to Cypher Game Engine!\nType commands or talk in plain English.\n==================================================\n\n";
+                terminal.innerHTML = "==================================================\nWelcome to Cypher Game Engine!\nType commands, talk in English, or try /question.\n==================================================\n\n";
                 return ">> System reset complete.";
             } else if (cmd === "/exit") {
                 return "Exiting language engine...";
