@@ -17,7 +17,7 @@
             overflow: hidden;
         }
         #viewport {
-            display: none; /* Hidden by default, toggled with /mode 3d */
+            display: none;
             height: 35vh;
             background-color: #050505;
             border-bottom: 2px solid #ffffff;
@@ -109,7 +109,6 @@ Type /help to view all available system commands and instruction manuals.</div>
 
             let materialParams = { color: data.color || 0xffffff };
             
-            // Handle custom uploaded image texture if present
             if (data.textureImage) {
                 const textureLoader = new THREE.TextureLoader();
                 materialParams.map = textureLoader.load(data.textureImage);
@@ -120,12 +119,32 @@ Type /help to view all available system commands and instruction manuals.</div>
             scene.add(activeMesh);
         }
 
+        // Gameplay state & keyboard event listeners
+        const keysPressed = {};
+        window.addEventListener('keydown', (e) => { keysPressed[e.key.toLowerCase()] = true; });
+        window.addEventListener('keyup', (e) => { keysPressed[e.key.toLowerCase()] = false; });
+
+        let gameModeActive = false;
+
         function animate() {
             requestAnimationFrame(animate);
+
             if (activeMesh) {
-                activeMesh.rotation.x += 0.01;
-                activeMesh.rotation.y += 0.015;
+                if (gameModeActive) {
+                    if (keysPressed['arrowleft'] || keysPressed['a']) activeMesh.position.x -= 0.05;
+                    if (keysPressed['arrowright'] || keysPressed['d']) activeMesh.position.x += 0.05;
+                    if (keysPressed['arrowup'] || keysPressed['w']) activeMesh.position.z -= 0.05;
+                    if (keysPressed['arrowdown'] || keysPressed['s']) activeMesh.position.z += 0.05;
+                    
+                    if (activeMesh.position.y > 0) {
+                        activeMesh.position.y -= 0.02;
+                    }
+                } else {
+                    activeMesh.rotation.x += 0.01;
+                    activeMesh.rotation.y += 0.015;
+                }
             }
+
             renderer.render(scene, camera);
         }
         animate();
@@ -157,6 +176,8 @@ CYPHER ENGINE MASTER COMMAND DIRECTORY:
   /help               - Displays this comprehensive command manual.
   /mode 3d            - Opens the top 3D viewport canvas window.
   /mode 2d            - Switches system focus to grid environment.
+  /play               - Initializes interactive gameplay and physics runner.
+  /stop               - Exits play mode and returns to editor console.
   /clear              - Clears the active text display terminal screen.
   /status             - Displays core diagnostic data and memory loads.
   /insert [string]    - Imports a packed world string generated from 
@@ -176,7 +197,26 @@ CYPHER ENGINE MASTER COMMAND DIRECTORY:
             }
             if (cmd === "/mode 2d") {
                 viewport.style.display = "none";
+                gameModeActive = false;
                 return "\n>> Switched to 2D Terminal Grid layout mode.";
+            }
+            if (cmd === "/play") {
+                if (!activeMesh) {
+                    return "\n>> [ERROR] No asset found in viewport. Use /insert [string] first!";
+                }
+                gameModeActive = true;
+                return `
+--------------------------------------------------
+PLAY ENGINE RUNNER: INITIALIZED
+--------------------------------------------------
+  Status: Live Gameplay Active
+  Controls: Use Arrow Keys / WASD to move your asset.
+  Type /stop to exit play mode and return to console.
+--------------------------------------------------`;
+            }
+            if (cmd === "/stop") {
+                gameModeActive = false;
+                return "\n>> Play engine deactivated. Returned to command terminal.";
             }
             if (cmd.startsWith("/insert ")) {
                 let codeString = cmd.substring(8).trim();
