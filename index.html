@@ -6,24 +6,30 @@
     <title>Your Programming Language v1.0</title>
     <style>
         body {
-            background-color: #121212;
+            background-color: #000;
             color: #00ff66;
             font-family: monospace;
-            padding: 20px;
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            box-sizing: border-box;
         }
         #terminal {
+            flex-grow: 1;
             background-color: #000;
-            border: 1px solid #00ff66;
-            padding: 15px;
-            height: 400px;
             overflow-y: auto;
-            border-radius: 5px;
-            margin-bottom: 10px;
             white-space: pre-wrap;
+            margin-bottom: 10px;
+            font-size: 14px;
+            line-height: 1.4;
         }
         .input-line {
             display: flex;
             align-items: center;
+            background-color: #000;
+            padding-bottom: env(safe-area-inset-bottom);
         }
         input {
             background: transparent;
@@ -38,9 +44,6 @@
 </head>
 <body>
 
-    <h2>WELCOME TO YOUR PROGRAMMING LANGUAGE v1.0</h2>
-    <p>Type <code>/help</code> to get started.</p>
-    
     <div id="terminal">==================================================
      WELCOME TO YOUR PROGRAMMING LANGUAGE v1.0    
 ==================================================
@@ -61,14 +64,17 @@ Type /exit to quit.
         
         let variables = {};
 
+        // Keep focus on input box when tapping anywhere on mobile
+        document.addEventListener("click", () => userInput.focus());
+
         userInput.addEventListener("keydown", function(event) {
             if (event.key === "Enter") {
                 let line = userInput.value.trim();
-                terminal.innerHTML += "Your Language > " + line + "\n";
+                terminal.innerHTML += "Your Language > " + line + "\n\n";
                 
                 let output = processCommand(line);
                 if (output) {
-                    terminal.innerHTML += output + "\n";
+                    terminal.innerHTML += output + "\n\n";
                 }
                 
                 terminal.scrollTop = terminal.scrollHeight;
@@ -76,31 +82,42 @@ Type /exit to quit.
             }
         });
 
+        const FULL_HELP_TEXT = 
+`==================================================
+         WELCOME TO YOUR LANGUAGE HELP GUIDE     
+==================================================
+
+(Note: All commands are CASE-INSENSITIVE!)
+
+1. VARIABLES & PRINTING:
+   "Thomas" = "h"     -> Saves "Thomas" inside variable "h"
+   SHOW "h"           -> Prints whatever is stored inside "h"
+
+2. RUNNING SCRIPTS / FILES:
+   RUN "test.txt"     -> Runs all code lines saved in a file
+
+3. SPRITE / GRAPHICS COMMANDS:
+   /DRAW              -> Displays your 10x10 sprite grid
+   /PIXEL X Y         -> Draws a pixel at coordinates X Y (e.g. /PIXEL 3 4)
+   /CLEARCANVAS       -> Clears the sprite board
+
+4. SYSTEM COMMANDS:
+   /HELP              -> Shows this manual
+   /RESET             -> Clears memory and screen
+   /EXIT              -> Quits the interpreter
+==================================================`;
+
         function processCommand(line) {
             let cmd = line.toLowerCase();
             
-                        if (cmd === "/help") {
-                return `==================================================\n` +
-                       `          WELCOME TO YOUR LANGUAGE HELP GUIDE     \n` +
-                       `==================================================\n` +
-                       `1. VARIABLES & PRINTING:\n` +
-                       `   Thomas = "h"  -> Saves "Thomas" inside variable "h"\n` +
-                       `   SHOW "h"      -> Prints whatever is stored inside "h"\n\n` +
-                       `2. SYSTEM COMMANDS:\n` +
-                       `   /HELP         -> Shows this manual\n` +
-                       `   /RESET        -> Clears memory & screen\n` +
-                       `   /EXIT         -> Quits the interpreter\n` +
-                       `==================================================`;
-        }
-                        else if (cmd === "/vars") {
-                let res = ">> Stored Variables:\n";
-                if (Object.keys(variables).length === 0) return res + "   (None)";
-                for (let [k, v] of Object.entries(variables)) {
-                    res += `   ${k} = ${v}\n`;
-                }
-                return res.trim();
-            } else if (cmd.startsWith("say ")) {
-                return ">> " + line.substring(4).trim();
+            if (cmd === "/help") {
+                return FULL_HELP_TEXT;
+            } else if (cmd === "/reset") {
+                variables = {};
+                terminal.innerHTML = "==================================================\n     WELCOME TO YOUR PROGRAMMING LANGUAGE v1.0    \n==================================================\nType /help to get the help menu.\nType /exit to quit.\n--------------------------------------------------\n\n";
+                return ">> Memory and screen cleared!";
+            } else if (cmd === "/exit") {
+                return "Exiting language engine...";
             } else if (cmd.startsWith("show ")) {
                 let content = line.substring(5).trim();
                 if (variables.hasOwnProperty(content)) {
@@ -116,9 +133,9 @@ Type /exit to quit.
                 let varName = parts[0].trim();
                 let valRaw = parts[1].trim();
                 variables[varName] = valRaw;
-                return `>> Assigned ${varName} = ${valRaw}`;
+                return `>> [MEMORY] Saved '${valRaw}' to variable '${varName}'`;
             }
-            return `>> Error: Unknown command '${line}'. Type /help for options.`;
+            return `>> [NATURAL LANGUAGE] Processed intent for: '${line}'`;
         }
     </script>
 </body>
