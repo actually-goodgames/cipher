@@ -79,9 +79,20 @@ Type /exit to quit.
         function processCommand(line) {
             let cmd = line.toLowerCase();
             
-            if (cmd === "/help") {
-                return "Commands:\n  /help - Shows help\n  /vars - Shows variables\n  say <text> - Prints text\n  <var> = <value> - Assigns variable\n  show <text> - Prints value";
-            } else if (cmd === "/vars") {
+                        if (cmd === "/help") {
+                return `==================================================\n` +
+                       `          WELCOME TO YOUR LANGUAGE HELP GUIDE     \n` +
+                       `==================================================\n` +
+                       `1. VARIABLES & PRINTING:\n` +
+                       `   Thomas = "h"  -> Saves "Thomas" inside variable "h"\n` +
+                       `   SHOW "h"      -> Prints whatever is stored inside "h"\n\n` +
+                       `2. SYSTEM COMMANDS:\n` +
+                       `   /HELP         -> Shows this manual\n` +
+                       `   /RESET        -> Clears memory & screen\n` +
+                       `   /EXIT         -> Quits the interpreter\n` +
+                       `==================================================`;
+        }
+                        else if (cmd === "/vars") {
                 let res = ">> Stored Variables:\n";
                 if (Object.keys(variables).length === 0) return res + "   (None)";
                 for (let [k, v] of Object.entries(variables)) {
