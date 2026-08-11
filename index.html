@@ -7,175 +7,189 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         body {
-            background-color: #0b0f19;
+            background-color: #000000;
             color: #ffffff;
-            font-family: monospace;
+            font-family: 'Courier New', Courier, monospace;
             margin: 0;
             display: flex;
             flex-direction: column;
             height: 100vh;
+            overflow: hidden;
         }
         #viewport {
-            flex-grow: 1;
+            display: none; /* Hidden by default, toggled with /mode 3d */
+            height: 35vh;
+            background-color: #050505;
+            border-bottom: 2px solid #ffffff;
             position: relative;
-            background-color: #030712;
-            border-bottom: 1px solid #374151;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
-        #terminal {
-            height: 200px;
-            background-color: #111827;
-            padding: 15px;
-            box-sizing: border-box;
+        #terminal-container {
+            flex-grow: 1;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            padding: 20px;
+            box-sizing: border-box;
+            background-color: #000000;
         }
         #output-screen {
             flex-grow: 1;
-            background-color: #030712;
-            border: 1px solid #374151;
-            padding: 10px;
+            background-color: #000000;
+            border: 1px solid #333333;
+            padding: 15px;
             overflow-y: auto;
-            font-size: 13px;
-            color: #34d399;
-            border-radius: 4px;
+            font-size: 14px;
+            color: #ffffff;
+            white-space: pre-wrap;
+            line-height: 1.5;
         }
-        .input-line {
+        .input-wrapper {
             display: flex;
-            gap: 10px;
+            align-items: center;
+            margin-top: 15px;
+            border-top: 1px solid #333333;
+            padding-top: 10px;
+        }
+        .prompt-symbol {
+            color: #ffffff;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 16px;
         }
         #commandInput {
             flex-grow: 1;
-            background-color: #1f2937;
+            background-color: #000000;
             color: #ffffff;
-            border: 1px solid #4b5563;
-            padding: 10px;
-            font-family: monospace;
-            border-radius: 4px;
+            border: none;
+            outline: none;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 15px;
         }
     </style>
 </head>
 <body>
 
     <div id="viewport">
-        <div id="canvas-container"></div>
+        <div id="canvas-target" style="width:100%; height:100%;"></div>
     </div>
 
-    <div id="terminal">
-        <div id="output-screen">>> Cypher Engine Initialized. Type /help for a list of commands.</div>
-        <div class="input-line">
-            <span style="color: #38bdf8; align-self: center;">&gt;</span>
-            <input type="text" id="commandInput" placeholder="Type a command here (e.g. /help, /insert [code])..." autofocus>
+    <div id="terminal-container">
+        <div id="output-screen">CYPHER ENGINE v2.0 [Minimalist B&W Mode]
+Type /help to view all available system commands and instruction manuals.</div>
+        
+        <div class="input-wrapper">
+            <span class="prompt-symbol">&gt;</span>
+            <input type="text" id="commandInput" placeholder="Enter command..." autofocus autocomplete="off">
         </div>
     </div>
 
     <script>
-        // --- 1. THREE.JS VIEWPORT SETUP ---
-        const container = document.getElementById("canvas-container");
+        const outputScreen = document.getElementById("output-screen");
+        const commandInput = document.getElementById("commandInput");
+        const viewport = document.getElementById("viewport");
+
+        // Three.js setup
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / (window.innerHeight * 0.35), 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
-        
-        renderer.setSize(400, 300); // Initial size of viewport render box
-        container.appendChild(renderer.domElement);
+        renderer.setSize(window.innerWidth, window.innerHeight * 0.35);
+        document.getElementById("canvas-target").appendChild(renderer.domElement);
 
-        scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-        const pointLight = new THREE.PointLight(0xffffff, 1);
-        pointLight.position.set(5, 5, 5);
-        scene.add(pointLight);
-
+        scene.add(new THREE.AmbientLight(0xffffff, 0.8));
         let activeMesh = null;
-        camera.position.z = 3;
+        camera.position.z = 4;
 
-        function renderShape(shapeType, colorHex = "#38bdf8") {
+        function renderCustomScene(data) {
             if (activeMesh) scene.remove(activeMesh);
             
             let geometry;
-            if (shapeType === "sphere") geometry = new THREE.SphereGeometry(0.7, 32, 32);
-            else if (shapeType === "cylinder") geometry = new THREE.CylinderGeometry(0.5, 0.5, 1.2, 32);
-            else geometry = new THREE.BoxGeometry(); // Default box
+            if (data.shape === "sphere") geometry = new THREE.SphereGeometry(data.size || 1, 32, 32);
+            else if (data.shape === "cylinder") geometry = new THREE.CylinderGeometry(data.size || 0.5, data.size || 0.5, (data.size || 1) * 2, 32);
+            else if (data.shape === "torus") geometry = new THREE.TorusGeometry(data.size || 1, 0.4, 16, 100);
+            else geometry = new THREE.BoxGeometry(data.size || 1, data.size || 1, data.size || 1);
 
-            let material = new THREE.MeshStandardMaterial({ color: colorHex });
+            let materialParams = { color: data.color || 0xffffff };
+            
+            // Handle custom uploaded image texture if present
+            if (data.textureImage) {
+                const textureLoader = new THREE.TextureLoader();
+                materialParams.map = textureLoader.load(data.textureImage);
+            }
+
+            let material = new THREE.MeshStandardMaterial(materialParams);
             activeMesh = new THREE.Mesh(geometry, material);
             scene.add(activeMesh);
         }
 
-        // Default initial shape
-        renderShape("box");
-
         function animate() {
             requestAnimationFrame(animate);
             if (activeMesh) {
-                activeMesh.rotation.x += 0.005;
-                activeMesh.rotation.y += 0.01;
+                activeMesh.rotation.x += 0.01;
+                activeMesh.rotation.y += 0.015;
             }
             renderer.render(scene, camera);
         }
         animate();
 
-        // --- 2. TERMINAL COMMAND ROUTER & IMPORT HANDLER ---
-        const outputScreen = document.getElementById("output-screen");
-        const commandInput = document.getElementById("commandInput");
-
         commandInput.addEventListener("keydown", function(event) {
             if (event.key === "Enter") {
-                let line = commandInput.value.trim();
-                if (!line) return;
+                let cmd = commandInput.value.trim();
+                if (!cmd) return;
 
-                // Print user input to terminal screen
-                appendOutput(`> ${line}`);
-                
-                // Process command response
-                let response = processCypherCommand(line);
+                appendOutput(`\n> ${cmd}`);
+                let response = routeCommand(cmd);
                 appendOutput(response);
 
-                // Clear input field
                 commandInput.value = "";
                 outputScreen.scrollTop = outputScreen.scrollHeight;
             }
         });
 
         function appendOutput(text) {
-            outputScreen.innerHTML += `<div>${text}</div>`;
+            outputScreen.innerText += text;
         }
 
-        function processCypherCommand(line) {
-            // Help Command
-            if (line === "/help") {
-                return ">> Commands: /help, /mode 3d, /insert [paste builder code string]";
+        function routeCommand(cmd) {
+            if (cmd === "/help") {
+                return `
+--------------------------------------------------
+CYPHER ENGINE MASTER COMMAND DIRECTORY:
+--------------------------------------------------
+  /help               - Displays this comprehensive command manual.
+  /mode 3d            - Opens the top 3D viewport canvas window.
+  /mode 2d            - Switches system focus to grid environment.
+  /clear              - Clears the active text display terminal screen.
+  /status             - Displays core diagnostic data and memory loads.
+  /insert [string]    - Imports a packed world string generated from 
+                        the Cypher Builder Studio website.
+--------------------------------------------------`;
             }
-
-            // Mode Command
-            if (line === "/mode 3d") {
-                renderShape("box");
-                return ">> Switched viewport to 3D standard mode.";
+            if (cmd === "/clear") {
+                outputScreen.innerText = "";
+                return "";
             }
-
-            // --- IMPORT COMMAND (Bridges Builder Website to Cypher) ---
-            if (line.startsWith("/insert ")) {
-                let codeString = line.substring(8).trim();
-                
+            if (cmd === "/status") {
+                return "\n[SYSTEM STATUS] Engine: Online | Theme: Monolith B&W | Memory: Optimal | Physics: Active";
+            }
+            if (cmd === "/mode 3d") {
+                viewport.style.display = "block";
+                return "\n>> 3D Viewport activated successfully at top.";
+            }
+            if (cmd === "/mode 2d") {
+                viewport.style.display = "none";
+                return "\n>> Switched to 2D Terminal Grid layout mode.";
+            }
+            if (cmd.startsWith("/insert ")) {
+                let codeString = cmd.substring(8).trim();
                 try {
-                    // 1. Decode base64 string back into JSON text
-                    let decodedJson = atob(codeString);
-                    
-                    // 2. Parse text into a JavaScript object
-                    let gameData = JSON.parse(decodedJson);
-                    
-                    // 3. Apply imported design to the main engine viewport
-                    renderShape(gameData.shape, gameData.color);
-                    
-                    return `>> Success! Inserted asset: Shape [${gameData.shape}], Model [${gameData.gender}], Outfit [${gameData.outfit}].`;
-                    
-                } catch (error) {
-                    return ">> Error: Invalid code string. Make sure you copied the entire base64 string from your builder studio!";
+                    let decoded = JSON.parse(atob(codeString));
+                    viewport.style.display = "block";
+                    renderCustomScene(decoded);
+                    return `\n>> Successfully imported project asset! Shape: [${decoded.shape}], Physics: [${decoded.physics}], AI Logic: [${decoded.aiPrompt || 'None'}].`;
+                } catch (e) {
+                    return "\n>> [ERROR] Invalid import string formatting. Check your builder export code.";
                 }
             }
-
-            return `>> Unknown command: "${line}". Type /help for options.`;
+            return `\n>> Unknown execution string: "${cmd}". Type /help for valid syntax.`;
         }
     </script>
 </body>
