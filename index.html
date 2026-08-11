@@ -1,13 +1,13 @@
-<!DOCTYPE html>
+   <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Programming Language v1.0</title>
+    <title>Cypher Programming Language</title>
     <style>
         body {
-            background-color: #000;
-            color: #00ff66;
+            background-color: #000000;
+            color: #ffffff;
             font-family: monospace;
             margin: 0;
             padding: 15px;
@@ -18,7 +18,7 @@
         }
         #terminal {
             flex-grow: 1;
-            background-color: #000;
+            background-color: #000000;
             overflow-y: auto;
             white-space: pre-wrap;
             margin-bottom: 10px;
@@ -28,13 +28,13 @@
         .input-line {
             display: flex;
             align-items: center;
-            background-color: #000;
+            background-color: #000000;
             padding-bottom: env(safe-area-inset-bottom);
         }
         input {
             background: transparent;
             border: none;
-            color: #00ff66;
+            color: #ffffff;
             font-family: monospace;
             font-size: 16px;
             outline: none;
@@ -45,7 +45,7 @@
 <body>
 
     <div id="terminal">==================================================
-     WELCOME TO YOUR PROGRAMMING LANGUAGE v1.0    
+Welcome to Cypher, the easiest coding language!
 ==================================================
 Type /help to get the help menu.
 Type /exit to quit.
@@ -54,7 +54,7 @@ Type /exit to quit.
 </div>
 
     <div class="input-line">
-        <span>Your Language &gt;&nbsp;</span>
+        <span>Cypher &gt;&nbsp;</span>
         <input type="text" id="userInput" autofocus autocomplete="off">
     </div>
 
@@ -63,14 +63,14 @@ Type /exit to quit.
         const userInput = document.getElementById("userInput");
         
         let variables = {};
+        let canvas = Array(10).fill().map(() => Array(10).fill("."));
 
-        // Keep focus on input box when tapping anywhere on mobile
         document.addEventListener("click", () => userInput.focus());
 
         userInput.addEventListener("keydown", function(event) {
             if (event.key === "Enter") {
                 let line = userInput.value.trim();
-                terminal.innerHTML += "Your Language > " + line + "\n\n";
+                terminal.innerHTML += "Cypher > " + line + "\n\n";
                 
                 let output = processCommand(line);
                 if (output) {
@@ -84,7 +84,7 @@ Type /exit to quit.
 
         const FULL_HELP_TEXT = 
 `==================================================
-         WELCOME TO YOUR LANGUAGE HELP GUIDE     
+          WELCOME TO CYPHER HELP GUIDE     
 ==================================================
 
 (Note: All commands are CASE-INSENSITIVE!)
@@ -114,10 +114,28 @@ Type /exit to quit.
                 return FULL_HELP_TEXT;
             } else if (cmd === "/reset") {
                 variables = {};
-                terminal.innerHTML = "==================================================\n     WELCOME TO YOUR PROGRAMMING LANGUAGE v1.0    \n==================================================\nType /help to get the help menu.\nType /exit to quit.\n--------------------------------------------------\n\n";
+                canvas = Array(10).fill().map(() => Array(10).fill("."));
+                terminal.innerHTML = "==================================================\nWelcome to Cypher, the easiest coding language!\n==================================================\nType /help to get the help menu.\nType /exit to quit.\n--------------------------------------------------\n\n";
                 return ">> Memory and screen cleared!";
             } else if (cmd === "/exit") {
                 return "Exiting language engine...";
+            } else if (cmd === "/draw") {
+                return ">> Sprite Grid (10x10):\n" + canvas.map(row => row.join(" ")).join("\n");
+            } else if (cmd === "/clearcanvas") {
+                canvas = Array(10).fill().map(() => Array(10).fill("."));
+                return ">> Canvas cleared!";
+            } else if (cmd.startsWith("/pixel ")) {
+                let parts = line.split(" ");
+                if (parts.length >= 3) {
+                    let x = parseInt(parts[1]);
+                    let y = parseInt(parts[2]);
+                    if (x >= 0 && x < 10 && y >= 0 && y < 10) {
+                        canvas[y][x] = "#";
+                        return `>> Pixel drawn at (${x}, ${y})`;
+                    }
+                    return ">> Error: Coordinates must be between 0 and 9.";
+                }
+                return ">> Error: Use format /PIXEL X Y";
             } else if (cmd.startsWith("show ")) {
                 let content = line.substring(5).trim();
                 if (variables.hasOwnProperty(content)) {
